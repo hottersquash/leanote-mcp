@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "leanote_email",
+      "description": "Leanote 登录邮箱"
+    },
+    {
+      "type": "promptString",
+      "id": "leanote_password",
+      "description": "Leanote 登录密码",
+      "password": true
+    }
+  ],
+  "servers": {
+    "leanote": {
+      "type": "http",
+      "url": "https://leanotemcp.byan.fun/mcp",
+      "headers": {
+        "X-Leanote-Email": "${input:leanote_email}",
+        "X-Leanote-Password": "${input:leanote_password}"
+      }
+    }
+  }
+}

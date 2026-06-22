@@ -2,7 +2,7 @@
   "mcpServers": {
     "leanote": {
       "type": "http",
-      "url": "http://192.168.2.150:3100/mcp"
+      "url": "https://leanotemcp.byan.fun/mcp"
     }
   }
 }

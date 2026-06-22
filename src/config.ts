@@ -41,13 +41,16 @@ function parseConfigFile(raw: string, configPath: string): LeanoteConfigFile {
   return config;
 }
 
-function configFromFile(configPath: string): LeanoteConfig {
+function configFromFile(
+  configPath: string,
+  requireCredentials: boolean,
+): LeanoteConfig {
   const file = parseConfigFile(readFileSync(configPath, "utf8"), configPath);
   const token = file.token?.trim();
   const email = file.email?.trim() ?? "";
   const password = file.password ?? "";
 
-  if (!token && (!email || !password)) {
+  if (requireCredentials && !token && (!email || !password)) {
     throw new Error(
       `Leanote config requires token or both email and password: ${configPath}`,
     );
@@ -61,7 +64,7 @@ function configFromFile(configPath: string): LeanoteConfig {
   };
 }
 
-function configFromEnv(): LeanoteConfig | null {
+function configFromEnv(requireCredentials: boolean): LeanoteConfig | null {
   const baseUrl = process.env.LEANOTE_BASE_URL?.replace(/\/$/, "");
   const email = process.env.LEANOTE_EMAIL;
   const password = process.env.LEANOTE_PASSWORD;
@@ -71,7 +74,7 @@ function configFromEnv(): LeanoteConfig | null {
     return null;
   }
 
-  if (!token && (!email || !password)) {
+  if (requireCredentials && !token && (!email || !password)) {
     throw new Error(
       "Set LEANOTE_TOKEN or both LEANOTE_EMAIL and LEANOTE_PASSWORD",
     );
@@ -85,13 +88,21 @@ function configFromEnv(): LeanoteConfig | null {
   };
 }
 
-export function loadLeanoteConfig(): LeanoteConfig {
+export interface LoadLeanoteConfigOptions {
+  /** stdio 模式需要凭据；HTTP 多人模式仅需 baseUrl */
+  requireCredentials?: boolean;
+}
+
+export function loadLeanoteConfig(
+  options: LoadLeanoteConfigOptions = {},
+): LeanoteConfig {
+  const requireCredentials = options.requireCredentials ?? true;
   const configPath = DEFAULT_CONFIG_PATH;
 
   try {
-    return configFromFile(configPath);
+    return configFromFile(configPath, requireCredentials);
   } catch (error) {
-    const envConfig = configFromEnv();
+    const envConfig = configFromEnv(requireCredentials);
     if (envConfig) {
       return envConfig;
     }

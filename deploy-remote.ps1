@@ -1,6 +1,6 @@
 param(
-  [string]$Server = "192.168.2.150",
-  [string]$User = "root",
+  [string]$Server = "leanote-server",
+  [string]$User = "byan",
   [string]$RemoteDir = "/opt/leanote-mcp"
 )
 

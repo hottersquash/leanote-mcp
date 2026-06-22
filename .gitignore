@@ -3,3 +3,4 @@ dist/
 .env
 config/leanote.json
 *.log
+.cache/

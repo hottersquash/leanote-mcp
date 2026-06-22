@@ -2,27 +2,58 @@
 
 import express from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { LeanoteClient } from "./leanote-client.js";
 import { loadLeanoteConfig } from "./config.js";
+import {
+  extractCredentialsFromHeaders,
+  getLeanoteClient,
+  hasCredentials,
+  mergeCredentials,
+} from "./auth.js";
 import { createMcpServer } from "./mcp-server.js";
 
-let client: LeanoteClient;
+let serverConfig;
 
 try {
-  client = new LeanoteClient(loadLeanoteConfig());
+  serverConfig = loadLeanoteConfig({ requireCredentials: false });
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`[leanote-mcp] Configuration error: ${message}`);
   process.exit(1);
 }
+
+const multiUserMode = !hasCredentials(serverConfig);
+
 const app = express();
 app.use(express.json({ limit: "4mb" }));
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "leanote-mcp" });
+  res.json({
+    status: "ok",
+    service: "leanote-mcp",
+    multiUser: multiUserMode,
+  });
 });
 
 app.post("/mcp", async (req, res) => {
+  const userConfig = mergeCredentials(
+    serverConfig,
+    extractCredentialsFromHeaders(req.headers),
+  );
+
+  if (!userConfig) {
+    res.status(401).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32001,
+        message:
+          "Leanote credentials required. Pass Authorization: Bearer <token>, or X-Leanote-Email and X-Leanote-Password headers.",
+      },
+      id: null,
+    });
+    return;
+  }
+
+  const client = getLeanoteClient(userConfig);
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
@@ -52,5 +83,8 @@ const port = Number(process.env.MCP_PORT ?? "3100");
 const host = process.env.MCP_HOST ?? "0.0.0.0";
 
 app.listen(port, host, () => {
-  console.log(`[leanote-mcp] HTTP server listening on http://${host}:${port}/mcp`);
+  const mode = multiUserMode ? "multi-user" : "single-user (with default account)";
+  console.log(
+    `[leanote-mcp] HTTP server listening on http://${host}:${port}/mcp (${mode})`,
+  );
 });

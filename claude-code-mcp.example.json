@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "leanote": {
+      "type": "http",
+      "url": "https://leanotemcp.byan.fun/mcp",
+      "headers": {
+        "X-Leanote-Email": "${LEANOTE_EMAIL}",
+        "X-Leanote-Password": "${LEANOTE_PASSWORD}"
+      }
+    }
+  }
+}

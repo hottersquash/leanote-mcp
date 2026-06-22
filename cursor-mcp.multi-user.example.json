@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "leanote": {
+      "type": "http",
+      "url": "https://leanotemcp.byan.fun/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:LEANOTE_TOKEN}"
+      }
+    }
+  }
+}
