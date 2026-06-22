@@ -1,0 +1,106 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import type { LeanoteConfig } from "./leanote-client.js";
+
+export interface LeanoteConfigFile {
+  baseUrl: string;
+  email?: string;
+  password?: string;
+  token?: string;
+}
+
+const DEFAULT_CONFIG_PATH = resolve(
+  process.env.LEANOTE_CONFIG_PATH ?? "config/leanote.json",
+);
+
+function normalizeBaseUrl(baseUrl: string): string {
+  return baseUrl.replace(/\/$/, "");
+}
+
+function parseConfigFile(raw: string, configPath: string): LeanoteConfigFile {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`Invalid JSON in Leanote config file: ${configPath}`);
+  }
+
+  if (!parsed || typeof parsed !== "object" || !("baseUrl" in parsed)) {
+    throw new Error(
+      `Leanote config file must contain baseUrl: ${configPath}`,
+    );
+  }
+
+  const config = parsed as LeanoteConfigFile;
+
+  if (!config.baseUrl?.trim()) {
+    throw new Error(`Leanote config baseUrl is required: ${configPath}`);
+  }
+
+  return config;
+}
+
+function configFromFile(configPath: string): LeanoteConfig {
+  const file = parseConfigFile(readFileSync(configPath, "utf8"), configPath);
+  const token = file.token?.trim();
+  const email = file.email?.trim() ?? "";
+  const password = file.password ?? "";
+
+  if (!token && (!email || !password)) {
+    throw new Error(
+      `Leanote config requires token or both email and password: ${configPath}`,
+    );
+  }
+
+  return {
+    baseUrl: normalizeBaseUrl(file.baseUrl),
+    email,
+    password,
+    token,
+  };
+}
+
+function configFromEnv(): LeanoteConfig | null {
+  const baseUrl = process.env.LEANOTE_BASE_URL?.replace(/\/$/, "");
+  const email = process.env.LEANOTE_EMAIL;
+  const password = process.env.LEANOTE_PASSWORD;
+  const token = process.env.LEANOTE_TOKEN;
+
+  if (!baseUrl) {
+    return null;
+  }
+
+  if (!token && (!email || !password)) {
+    throw new Error(
+      "Set LEANOTE_TOKEN or both LEANOTE_EMAIL and LEANOTE_PASSWORD",
+    );
+  }
+
+  return {
+    baseUrl,
+    email: email ?? "",
+    password: password ?? "",
+    token,
+  };
+}
+
+export function loadLeanoteConfig(): LeanoteConfig {
+  const configPath = DEFAULT_CONFIG_PATH;
+
+  try {
+    return configFromFile(configPath);
+  } catch (error) {
+    const envConfig = configFromEnv();
+    if (envConfig) {
+      return envConfig;
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(message);
+  }
+}
+
+export function getConfigPath(): string {
+  return DEFAULT_CONFIG_PATH;
+}

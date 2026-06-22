@@ -1,0 +1,37 @@
+{
+  "name": "leanote-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Cursor to interact with self-hosted Leanote",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "leanote-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:http": "node dist/http.js",
+    "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/http.ts"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "leanote",
+    "cursor"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
