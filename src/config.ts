@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import type { LeanoteConfig } from "./leanote-client.js";
 
 export interface LeanoteConfigFile {
-  baseUrl: string;
+  baseUrl?: string;
   email?: string;
   password?: string;
   token?: string;
@@ -17,6 +17,11 @@ function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.replace(/\/$/, "");
 }
 
+function baseUrlFromEnv(): string | undefined {
+  const baseUrl = process.env.LEANOTE_BASE_URL?.trim();
+  return baseUrl ? normalizeBaseUrl(baseUrl) : undefined;
+}
+
 function parseConfigFile(raw: string, configPath: string): LeanoteConfigFile {
   let parsed: unknown;
 
@@ -26,19 +31,11 @@ function parseConfigFile(raw: string, configPath: string): LeanoteConfigFile {
     throw new Error(`Invalid JSON in Leanote config file: ${configPath}`);
   }
 
-  if (!parsed || typeof parsed !== "object" || !("baseUrl" in parsed)) {
-    throw new Error(
-      `Leanote config file must contain baseUrl: ${configPath}`,
-    );
+  if (!parsed || typeof parsed !== "object") {
+    throw new Error(`Leanote config file must be a JSON object: ${configPath}`);
   }
 
-  const config = parsed as LeanoteConfigFile;
-
-  if (!config.baseUrl?.trim()) {
-    throw new Error(`Leanote config baseUrl is required: ${configPath}`);
-  }
-
-  return config;
+  return parsed as LeanoteConfigFile;
 }
 
 function configFromFile(
@@ -46,9 +43,16 @@ function configFromFile(
   requireCredentials: boolean,
 ): LeanoteConfig {
   const file = parseConfigFile(readFileSync(configPath, "utf8"), configPath);
+  const baseUrl = baseUrlFromEnv() ?? file.baseUrl?.trim();
   const token = file.token?.trim();
   const email = file.email?.trim() ?? "";
   const password = file.password ?? "";
+
+  if (!baseUrl) {
+    throw new Error(
+      `Leanote baseUrl required: set LEANOTE_BASE_URL or baseUrl in ${configPath}`,
+    );
+  }
 
   if (requireCredentials && !token && (!email || !password)) {
     throw new Error(
@@ -57,7 +61,7 @@ function configFromFile(
   }
 
   return {
-    baseUrl: normalizeBaseUrl(file.baseUrl),
+    baseUrl: normalizeBaseUrl(baseUrl),
     email,
     password,
     token,
@@ -65,7 +69,7 @@ function configFromFile(
 }
 
 function configFromEnv(requireCredentials: boolean): LeanoteConfig | null {
-  const baseUrl = process.env.LEANOTE_BASE_URL?.replace(/\/$/, "");
+  const baseUrl = baseUrlFromEnv();
   const email = process.env.LEANOTE_EMAIL;
   const password = process.env.LEANOTE_PASSWORD;
   const token = process.env.LEANOTE_TOKEN;
@@ -88,6 +92,16 @@ function configFromEnv(requireCredentials: boolean): LeanoteConfig | null {
   };
 }
 
+function tryConfigFromFile(
+  requireCredentials: boolean,
+): LeanoteConfig | null {
+  try {
+    return configFromFile(DEFAULT_CONFIG_PATH, requireCredentials);
+  } catch {
+    return null;
+  }
+}
+
 export interface LoadLeanoteConfigOptions {
   /** HTTP 服务器配置仅需 baseUrl；用户凭据由请求头传入 */
   requireCredentials?: boolean;
@@ -99,17 +113,19 @@ export function loadLeanoteConfig(
   const requireCredentials = options.requireCredentials ?? true;
   const configPath = DEFAULT_CONFIG_PATH;
 
-  try {
-    return configFromFile(configPath, requireCredentials);
-  } catch (error) {
-    const envConfig = configFromEnv(requireCredentials);
-    if (envConfig) {
-      return envConfig;
-    }
-
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(message);
+  const fileConfig = tryConfigFromFile(requireCredentials);
+  if (fileConfig) {
+    return fileConfig;
   }
+
+  const envConfig = configFromEnv(requireCredentials);
+  if (envConfig) {
+    return envConfig;
+  }
+
+  throw new Error(
+    `Leanote baseUrl required: set LEANOTE_BASE_URL or provide baseUrl in ${configPath}`,
+  );
 }
 
 export function getConfigPath(): string {

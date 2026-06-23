@@ -1,6 +1,6 @@
 # Leanote MCP
 
-Cursor 可用的 MCP 服务，对接自建 [Leanote](https://github.com/leanote/leanote) 笔记。多人共用同一 MCP 服务，各用户使用自己的 Leanote 账号。
+Cursor、ClaudeCode、Copliot可用的 MCP 服务，对接自建 [Leanote](https://github.com/leanote/leanote) 笔记。多人共用同一 MCP 服务，各用户使用自己的 Leanote 账号。
 
 | 工具 | 说明 |
 |------|------|
@@ -14,29 +14,24 @@ Cursor 可用的 MCP 服务，对接自建 [Leanote](https://github.com/leanote/
 ```bash
 git clone <repo-url> /opt/leanote-mcp
 cd /opt/leanote-mcp
-cp config/leanote.example.json config/leanote.json
-# 编辑 config/leanote.json（仅 Leanote 地址），按需修改 docker-compose.yml 中的 MCP 参数
-chmod 600 config/leanote.json
-docker compose up -d --build
 ```
 
-**`docker-compose.yml`** — MCP 服务参数通过 `environment` 传入容器（默认值如下，可直接修改文件或通过环境变量覆盖）：
+**`docker-compose.yml`**—修改环境变量：
 
 ```yaml
 environment:
+  # HTTP 监听地址与端口，默认 `0.0.0.0:3100`
   MCP_HOST: ${MCP_HOST:-0.0.0.0}
   MCP_PORT: ${MCP_PORT:-3100}
-  LEANOTE_CONFIG_PATH: ${LEANOTE_CONFIG_PATH:-/app/config/leanote.json}
+  # leanote 部署地址
+  LEANOTE_BASE_URL: ${LEANOTE_BASE_URL:-http://your-leanote-host:9002}
 ```
 
-例如修改端口：`MCP_PORT=3200 docker compose up -d --build`
+**不要**在 Docker 环境变量中写入用户凭据，凭据由 Cursor 请求头传入。
 
-**`config/leanote.json`** — 只填写 Leanote 地址，**不要**写入任何用户凭据：
-
-```json
-{
-  "baseUrl": "http://your-leanote-host:9002"
-}
+启动服务
+```
+docker compose up -d --build
 ```
 
 验证：
@@ -44,12 +39,6 @@ environment:
 ```bash
 curl http://your-mcp-host:3100/health
 # {"status":"ok","service":"leanote-mcp"}
-```
-
-从 Windows 本机一键上传部署（需配置 SSH）：
-
-```powershell
-.\deploy-remote.ps1 -Server your-server
 ```
 
 ## 配置 Cursor
@@ -95,14 +84,10 @@ curl http://your-mcp-host:3100/health
 
 完整示例见 `cursor-mcp.example.json`。重启 Cursor 后即可在 Agent 对话中使用上述工具。
 
-## 配置参考
+## 配置 Claude Code或者Copilot
+见`mcp.example`
 
-| 文件 / 变量 | 说明 |
-|-------------|------|
-| `docker-compose.yml` | MCP 服务参数（`MCP_HOST`、`MCP_PORT`、`LEANOTE_CONFIG_PATH`） |
-| `config/leanote.json` | Leanote 服务地址（仅 `baseUrl`） |
-| `LEANOTE_CONFIG_PATH` | 容器内配置文件路径，默认 `/app/config/leanote.json` |
-| `MCP_HOST` / `MCP_PORT` | HTTP 监听地址与端口，默认 `0.0.0.0:3100` |
+## 配置参考
 
 ### HTTP 请求头
 

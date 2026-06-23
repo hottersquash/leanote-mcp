@@ -24,13 +24,9 @@ scp $archive "${User}@${Server}:/tmp/leanote-mcp-deploy.tar.gz"
 Write-Host "==> Running remote deploy..."
 ssh "${User}@${Server}" @"
 set -e
-mkdir -p $RemoteDir/config
+mkdir -p $RemoteDir
 tar -xzf /tmp/leanote-mcp-deploy.tar.gz -C $RemoteDir
 cd $RemoteDir
-if [ ! -f config/leanote.json ]; then
-  cp config/leanote.example.json config/leanote.json
-  echo 'Created config/leanote.json — set Leanote baseUrl before starting.'
-fi
 chmod +x deploy.sh
 ./deploy.sh
 "@

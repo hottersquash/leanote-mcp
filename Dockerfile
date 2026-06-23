@@ -14,7 +14,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV MCP_HOST=0.0.0.0
 ENV MCP_PORT=3100
-ENV LEANOTE_CONFIG_PATH=/app/config/leanote.json
 
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev

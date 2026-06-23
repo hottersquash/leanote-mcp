@@ -11,11 +11,6 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -f config/leanote.json ]; then
-  cp config/leanote.example.json config/leanote.json
-  echo "Created config/leanote.json — set Leanote baseUrl before starting."
-fi
-
 docker compose down 2>/dev/null || true
 docker compose build --no-cache
 docker compose up -d

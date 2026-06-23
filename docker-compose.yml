@@ -8,8 +8,6 @@ services:
     environment:
       MCP_HOST: ${MCP_HOST:-0.0.0.0}
       MCP_PORT: ${MCP_PORT:-3100}
-      LEANOTE_CONFIG_PATH: ${LEANOTE_CONFIG_PATH:-/app/config/leanote.json}
-    volumes:
-      - ./config/leanote.json:/app/config/leanote.json:ro
+      LEANOTE_BASE_URL: ${LEANOTE_BASE_URL:-http://your-leanote-host:9002}
     extra_hosts:
       - "host.docker.internal:host-gateway"

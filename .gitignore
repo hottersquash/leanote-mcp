@@ -3,3 +3,5 @@ dist/
 config/leanote.json
 *.log
 .cache/
+deploy-remote.ps1
+deploy.sh
