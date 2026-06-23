@@ -1,6 +1,6 @@
 param(
-  [string]$Server = "leanote-server",
-  [string]$User = "byan",
+  [string]$Server = "your-server",
+  [string]$User = "your-user",
   [string]$RemoteDir = "/opt/leanote-mcp"
 )
 
@@ -24,24 +24,27 @@ scp $archive "${User}@${Server}:/tmp/leanote-mcp-deploy.tar.gz"
 Write-Host "==> Running remote deploy..."
 ssh "${User}@${Server}" @"
 set -e
-sudo mkdir -p $RemoteDir
-sudo tar -xzf /tmp/leanote-mcp-deploy.tar.gz -C $RemoteDir
+mkdir -p $RemoteDir/config
+tar -xzf /tmp/leanote-mcp-deploy.tar.gz -C $RemoteDir
 cd $RemoteDir
-if [ ! -f .env ]; then
-  cp .env.example .env
-  echo 'Please edit $RemoteDir/.env with Leanote credentials'
+if [ ! -f config/leanote.json ]; then
+  cp config/leanote.example.json config/leanote.json
+  echo 'Created config/leanote.json — set Leanote baseUrl before starting.'
 fi
 chmod +x deploy.sh
 ./deploy.sh
 "@
 
-Write-Host "==> Done. Configure Cursor MCP:"
+Write-Host "==> Done. Configure Cursor MCP (each user adds their own credentials):"
 Write-Host @"
 {
   `"mcpServers`": {
     `"leanote`": {
       `"type`": `"http`",
-      `"url`": `"http://${Server}:3100/mcp`"
+      `"url`": `"http://${Server}:3100/mcp`",
+      `"headers`": {
+        `"Authorization`": `"Bearer `${env:LEANOTE_TOKEN}`"
+      }
     }
   }
 }

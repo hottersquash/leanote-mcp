@@ -15,7 +15,7 @@
   "servers": {
     "leanote": {
       "type": "http",
-      "url": "https://leanotemcp.byan.fun/mcp",
+      "url": "http://your-mcp-host:3100/mcp",
       "headers": {
         "X-Leanote-Email": "${input:leanote_email}",
         "X-Leanote-Password": "${input:leanote_password}"

@@ -21,7 +21,12 @@ try {
   process.exit(1);
 }
 
-const multiUserMode = !hasCredentials(serverConfig);
+if (hasCredentials(serverConfig)) {
+  console.error(
+    "[leanote-mcp] config/leanote.json must only contain baseUrl; user credentials belong in Cursor headers.",
+  );
+  process.exit(1);
+}
 
 const app = express();
 app.use(express.json({ limit: "4mb" }));
@@ -30,11 +35,10 @@ app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
     service: "leanote-mcp",
-    multiUser: multiUserMode,
   });
 });
 
-app.post("/mcp", async (req, res) => {
+app.all("/mcp", async (req, res) => {
   const userConfig = mergeCredentials(
     serverConfig,
     extractCredentialsFromHeaders(req.headers),
@@ -64,9 +68,11 @@ app.post("/mcp", async (req, res) => {
     void server.close();
   });
 
+  const parsedBody = req.method === "POST" ? req.body : undefined;
+
   try {
     await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    await transport.handleRequest(req, res, parsedBody);
   } catch (error) {
     console.error("[leanote-mcp] HTTP request error:", error);
     if (!res.headersSent) {
@@ -83,8 +89,7 @@ const port = Number(process.env.MCP_PORT ?? "3100");
 const host = process.env.MCP_HOST ?? "0.0.0.0";
 
 app.listen(port, host, () => {
-  const mode = multiUserMode ? "multi-user" : "single-user (with default account)";
   console.log(
-    `[leanote-mcp] HTTP server listening on http://${host}:${port}/mcp (${mode})`,
+    `[leanote-mcp] HTTP server listening on http://${host}:${port}/mcp`,
   );
 });

@@ -58,7 +58,7 @@ export function mergeCredentials(
   userCredentials: UserCredentials | null,
 ): LeanoteConfig | null {
   if (!userCredentials) {
-    return hasCredentials(serverConfig) ? serverConfig : null;
+    return null;
   }
 
   const token = userCredentials.token?.trim();
@@ -82,7 +82,7 @@ export function mergeCredentials(
     };
   }
 
-  return hasCredentials(serverConfig) ? serverConfig : null;
+  return null;
 }
 
 function clientCacheKey(config: LeanoteConfig): string {

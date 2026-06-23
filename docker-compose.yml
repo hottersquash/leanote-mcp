@@ -4,11 +4,11 @@ services:
     container_name: leanote-mcp
     restart: unless-stopped
     ports:
-      - "3100:3100"
+      - "${MCP_PORT:-3100}:${MCP_PORT:-3100}"
     environment:
-      MCP_HOST: 0.0.0.0
-      MCP_PORT: 3100
-      LEANOTE_CONFIG_PATH: /app/config/leanote.json
+      MCP_HOST: ${MCP_HOST:-0.0.0.0}
+      MCP_PORT: ${MCP_PORT:-3100}
+      LEANOTE_CONFIG_PATH: ${LEANOTE_CONFIG_PATH:-/app/config/leanote.json}
     volumes:
       - ./config/leanote.json:/app/config/leanote.json:ro
     extra_hosts:

@@ -2,7 +2,10 @@
   "mcpServers": {
     "leanote": {
       "type": "http",
-      "url": "https://leanotemcp.byan.fun/mcp"
+      "url": "http://your-mcp-host:3100/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:LEANOTE_TOKEN}"
+      }
     }
   }
 }

@@ -1,23 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="/opt/leanote-mcp"
-SERVICE_NAME="leanote-mcp"
+APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "${APP_DIR}"
 
-echo "==> Deploying leanote-mcp to ${APP_DIR}"
+echo "==> Deploying leanote-mcp in ${APP_DIR}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Docker is required. Install Docker first."
   exit 1
 fi
 
-sudo mkdir -p "${APP_DIR}"
-sudo cp -r . "${APP_DIR}/"
-cd "${APP_DIR}"
-
-if [ ! -f .env ]; then
-  cp .env.example .env
-  echo "Created ${APP_DIR}/.env — please edit Leanote credentials before starting."
+if [ ! -f config/leanote.json ]; then
+  cp config/leanote.example.json config/leanote.json
+  echo "Created config/leanote.json — set Leanote baseUrl before starting."
 fi
 
 docker compose down 2>/dev/null || true

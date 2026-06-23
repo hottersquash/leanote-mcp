@@ -89,7 +89,7 @@ function configFromEnv(requireCredentials: boolean): LeanoteConfig | null {
 }
 
 export interface LoadLeanoteConfigOptions {
-  /** stdio 模式需要凭据；HTTP 多人模式仅需 baseUrl */
+  /** HTTP 服务器配置仅需 baseUrl；用户凭据由请求头传入 */
   requireCredentials?: boolean;
 }
 
