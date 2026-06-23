@@ -1,6 +1,6 @@
 node_modules/
 dist/
-config/leanote.json
+.env
 *.log
 .cache/
 deploy-remote.ps1

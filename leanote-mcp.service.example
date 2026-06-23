@@ -1,0 +1,14 @@
+[Unit]
+Description=Leanote MCP HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/leanote-mcp
+EnvironmentFile=/opt/leanote-mcp/.env
+ExecStart=/usr/bin/node dist/http.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

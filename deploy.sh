@@ -1,21 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+MODE="${1:-docker}"
 APP_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "${APP_DIR}"
 
-echo "==> Deploying leanote-mcp in ${APP_DIR}"
-
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Docker is required. Install Docker first."
-  exit 1
-fi
-
-docker compose down 2>/dev/null || true
-docker compose build --no-cache
-docker compose up -d
-
-echo "==> Deployment complete"
-echo "    Health: http://$(hostname -I | awk '{print $1}'):3100/health"
-echo "    MCP:    http://$(hostname -I | awk '{print $1}'):3100/mcp"
-docker compose ps
+case "${MODE}" in
+  docker)
+    exec "${APP_DIR}/deploy-docker.sh" "${@:2}"
+    ;;
+  npm)
+    exec "${APP_DIR}/deploy-npm.sh" "${@:2}"
+    ;;
+  *)
+    echo "Usage: $0 {docker|npm}" >&2
+    exit 1
+    ;;
+esac

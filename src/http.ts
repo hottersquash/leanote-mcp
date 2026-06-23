@@ -23,7 +23,7 @@ try {
 
 if (hasCredentials(serverConfig)) {
   console.error(
-    "[leanote-mcp] Server config must only provide baseUrl (config file or LEANOTE_BASE_URL); user credentials belong in Cursor headers.",
+    "[leanote-mcp] Server config must only provide baseUrl via LEANOTE_BASE_URL; user credentials belong in Cursor headers.",
   );
   process.exit(1);
 }

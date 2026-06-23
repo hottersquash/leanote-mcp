@@ -10,7 +10,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/http.js",
-    "dev": "tsx src/http.ts"
+    "dev": "tsx src/http.ts",
+    "deploy:docker": "bash deploy-docker.sh",
+    "deploy:npm": "bash deploy-npm.sh"
   },
   "engines": {
     "node": ">=18"
